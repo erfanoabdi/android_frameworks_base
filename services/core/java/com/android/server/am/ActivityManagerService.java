@@ -1301,6 +1301,9 @@ public final class ActivityManagerService extends ActivityManagerNative
      */
     int mLruSeq = 0;
 
+    //Camera Mod
+    private SparseIntArray mMediaProfileProcesses = new SparseIntArray();
+
     /**
      * Keep track of the non-cached/empty process we last found, to help
      * determine how to distribute cached/empty processes next time.
@@ -4402,6 +4405,7 @@ public final class ActivityManagerService extends ActivityManagerNative
     }
 
     private void dispatchProcessDied(int pid, int uid) {
+        handleMediaProfileProcessDied(pid);
         int i = mProcessObservers.beginBroadcast();
         while (i > 0) {
             i--;
@@ -22686,5 +22690,52 @@ public final class ActivityManagerService extends ActivityManagerNative
         // For direct boot aware activities, they can be shown without triggering a work challenge
         // before the profile user is unlocked.
         return rInfo != null && rInfo.activityInfo != null;
+    }
+
+    public void registerMediaProfile() {
+        int pid = Binder.getCallingPid();
+        synchronized (this) {
+            this.mMediaProfileProcesses.put(pid, this.mMediaProfileProcesses.get(pid) + 1);
+        }
+    }
+
+    public void unregisterMediaProfile() {
+        int pid = Binder.getCallingPid();
+        synchronized (this) {
+            int v = this.mMediaProfileProcesses.get(pid, -1) - 1;
+            if (v > 0) {
+                this.mMediaProfileProcesses.put(pid, v);
+            } else if (v == 0) {
+                int index = this.mMediaProfileProcesses.indexOfKey(pid);
+                if (index >= 0) {
+                    this.mMediaProfileProcesses.removeAt(index);
+                }
+            }
+        }
+    }
+
+    public void killMediaProfile() {
+        int callingUid = Binder.getCallingUid();
+        if (callingUid == 0 || callingUid == 1000) {
+            synchronized (this) {
+                for (int i = 0; i < this.mMediaProfileProcesses.size(); i++) {
+                    int pid = this.mMediaProfileProcesses.keyAt(i);
+                    int c = this.mMediaProfileProcesses.valueAt(i);
+                    if (c > 0 && c != MY_PID) {
+                        Slog.i("ActivityManager", "Killing " + pid + " because of stale media profile data");
+                        Process.killProcessQuiet(pid);
+                    }
+                }
+                this.mMediaProfileProcesses.clear();
+            }
+            return;
+        }
+        throw new SecurityException("killMediaProfile called from non-system process");
+    }
+
+    private void handleMediaProfileProcessDied(int pid) {
+        synchronized (this) {
+            this.mMediaProfileProcesses.delete(pid);
+        }
     }
 }

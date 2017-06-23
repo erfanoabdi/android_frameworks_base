@@ -690,9 +690,9 @@ public interface IActivityManager extends IInterface {
     /* package */ boolean testIsSystemReady();
 
     // Camera Mod
-    void registerMediaProfile() throws RemoteException;
-    void unregisterMediaProfile() throws RemoteException;
-    void killMediaProfile() throws RemoteException;
+    public void registerMediaProfile() throws RemoteException;
+    public void unregisterMediaProfile() throws RemoteException;
+    public void killMediaProfile() throws RemoteException;
 
     /** Information you can retrieve about a particular application. */
     public static class ContentProviderHolder implements Parcelable {
