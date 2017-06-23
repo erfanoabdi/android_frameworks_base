@@ -689,6 +689,11 @@ public interface IActivityManager extends IInterface {
      */
     /* package */ boolean testIsSystemReady();
 
+    // Camera Mod
+    void registerMediaProfile() throws RemoteException;
+    void unregisterMediaProfile() throws RemoteException;
+    void killMediaProfile() throws RemoteException;
+
     /** Information you can retrieve about a particular application. */
     public static class ContentProviderHolder implements Parcelable {
         public final ProviderInfo info;
@@ -1077,4 +1082,9 @@ public interface IActivityManager extends IInterface {
     int SET_HAS_TOP_UI = IBinder.FIRST_CALL_TRANSACTION + 379;
     int CAN_BYPASS_WORK_CHALLENGE = IBinder.FIRST_CALL_TRANSACTION + 380;
     int UPDATE_ASSETS_TRANSACTION = IBinder.FIRST_CALL_TRANSACTION + 381;
+
+    // Camera Mod
+    int REGISTER_MEDIAPROFILE_TRANSCATION = IBinder.FIRST_CALL_TRANSACTION + 5001;
+    int UNREGISTER_MEDIAPROFILE_TRANSCATION = IBinder.FIRST_CALL_TRANSACTION + 5002;
+    int KILL_MEDIAPROFILE_TRANSCATION = IBinder.FIRST_CALL_TRANSACTION + 5003;
 }

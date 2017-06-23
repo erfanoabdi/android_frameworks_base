@@ -22,6 +22,10 @@ import android.media.MediaCodecInfo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
+import android.app.ActivityManagerNative;
+import android.os.RemoteException;
+import android.os.SystemProperties;
+import android.text.TextUtils;
 
 /**
  * Allows you to enumerate available codecs, each specified as a {@link MediaCodecInfo} object,
@@ -75,6 +79,8 @@ final public class MediaCodecList {
     private static MediaCodecInfo[] sAllCodecInfos;
     private static MediaCodecInfo[] sRegularCodecInfos;
     private static Map<String, Object> sGlobalSettings;
+
+    private boolean mMod;
 
     private static final void initCodecList() {
         synchronized (sInitLock) {
@@ -172,6 +178,30 @@ final public class MediaCodecList {
             mCodecInfos = sRegularCodecInfos;
         } else {
             mCodecInfos = sAllCodecInfos;
+        }
+        registerMediaProfileIfNeccessary();
+    }
+
+    private void registerMediaProfileIfNeccessary() {
+        if (!TextUtils.isEmpty(SystemProperties.get("init.svc.mods_camd"))) {
+            registerMediaProfile();
+        }
+    }
+
+    private void registerMediaProfile() {
+        this.mMod = true;
+        try {
+            ActivityManagerNative.getDefault().registerMediaProfile();
+        } catch (RemoteException e) {
+        }
+    }
+
+    protected void finalize() {
+        if (this.mMod) {
+            try {
+                ActivityManagerNative.getDefault().unregisterMediaProfile();
+            } catch (RemoteException e) {
+            }
         }
     }
 

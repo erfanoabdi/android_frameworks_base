@@ -18,6 +18,10 @@ package android.media;
 
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
+import android.app.ActivityManagerNative;
+import android.os.RemoteException;
+import android.os.SystemProperties;
+import android.text.TextUtils;
 
 /**
  * Retrieves the
@@ -386,6 +390,9 @@ public class CamcorderProfile
      */
     public int audioChannels;
 
+    // Camera Mod
+    private boolean mMod;
+
     /**
      * Returns the camcorder profile for the first back-facing camera on the
      * device at the given quality level. If the device has no back-facing
@@ -565,6 +572,30 @@ public class CamcorderProfile
         this.audioBitRate     = audioBitRate;
         this.audioSampleRate  = audioSampleRate;
         this.audioChannels    = audioChannels;
+        registerMediaProfileIfNeccessary();
+    }
+
+    private void registerMediaProfileIfNeccessary() {
+        if (!TextUtils.isEmpty(SystemProperties.get("init.svc.mods_camd"))) {
+            registerMediaProfile();
+        }
+    }
+
+    private void registerMediaProfile() {
+        this.mMod = true;
+        try {
+            ActivityManagerNative.getDefault().registerMediaProfile();
+        } catch (RemoteException e) {
+        }
+    }
+
+    protected void finalize() {
+        if (this.mMod) {
+            try {
+                ActivityManagerNative.getDefault().unregisterMediaProfile();
+            } catch (RemoteException e) {
+            }
+        }
     }
 
     // Methods implemented by JNI

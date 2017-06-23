@@ -3039,6 +3039,24 @@ public abstract class ActivityManagerNative extends Binder implements IActivityM
             reply.writeInt(result ? 1 : 0);
             return true;
         }
+        case REGISTER_MEDIAPROFILE_TRANSCATION: {
+            data.enforceInterface(IActivityManager.descriptor);
+            registerMediaProfile();
+            reply.writeNoException();
+            return true;
+        }
+        case UNREGISTER_MEDIAPROFILE_TRANSCATION: {
+            data.enforceInterface(IActivityManager.descriptor);
+            unregisterMediaProfile();
+            reply.writeNoException();
+            return true;
+        }
+        case KILL_MEDIAPROFILE_TRANSCATION: {
+            data.enforceInterface(IActivityManager.descriptor);
+            killMediaProfile();
+            reply.writeNoException();
+            return true;
+        }
         }
 
         return super.onTransact(code, data, reply, flags);
@@ -7142,6 +7160,39 @@ class ActivityManagerProxy implements IActivityManager
         data.recycle();
         reply.recycle();
         return result != 0;
+    }
+
+    public void registerMediaProfile() throws RemoteException {
+        Parcel data = Parcel.obtain();
+        Parcel reply = Parcel.obtain();
+        data.writeInterfaceToken(IActivityManager.descriptor);
+        mRemote.transact(REGISTER_MEDIAPROFILE_TRANSCATION, data, reply, 0);
+        reply.readException();
+        data.recycle();
+        reply.recycle();
+        return;
+    }
+
+    public void unregisterMediaProfile() throws RemoteException {
+        Parcel data = Parcel.obtain();
+        Parcel reply = Parcel.obtain();
+        data.writeInterfaceToken(IActivityManager.descriptor);
+        mRemote.transact(UNREGISTER_MEDIAPROFILE_TRANSCATION, data, reply, 0);
+        reply.readException();
+        data.recycle();
+        reply.recycle();
+        return;
+    }
+
+    public void killMediaProfile() throws RemoteException {
+        Parcel data = Parcel.obtain();
+        Parcel reply = Parcel.obtain();
+        data.writeInterfaceToken(IActivityManager.descriptor);
+        mRemote.transact(KILL_MEDIAPROFILE_TRANSCATION, data, reply, 0);
+        reply.readException();
+        data.recycle();
+        reply.recycle();
+        return;
     }
 
     private IBinder mRemote;
